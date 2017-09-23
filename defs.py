@@ -13,6 +13,7 @@ CAPTAIN = 11
 CONTESSA = 12
 DUKE = 13
 ASSASSIN = 14
+HIDDEN = 15
 
 # move types
 INCOME = 21
@@ -32,6 +33,31 @@ NO_I_HAVE_CAPTAIN = 35
 NO_I_HAVE_CONTESSA = 36
 REVEAL_CARD_1 = 37
 REVEAL_CARD_2 = 38
+
+
+
+def card_to_str(card):
+	return {
+		AMBASSADOR: 'AMBASSADOR',
+		CAPTAIN: 'CAPTAIN',
+		CONTESSA: 'CONTESSA',
+		DUKE: 'DUKE',
+		ASSASSIN: 'ASSASSIN',
+		HIDDEN: 'HIDDEN'
+	}[card]
+
+def card_from_str(card):
+	return {
+		'AMBASSADOR': AMBASSADOR,
+		'CAPTAIN': CAPTAIN,
+		'CONTESSA': CONTESSA,
+		'DUKE': DUKE,
+		'ASSASSIN': ASSASSIN,
+		'HIDDEN': HIDDEN
+	}[card]
+
+
+
 
 class Player:
 	next_id = 1
@@ -54,8 +80,12 @@ class Player:
 	def respond_to_assassinate_me(self, move, game_state, history):
 		#options: OK, NO_YOU_DONT_HAVE, NO_I_HAVE_CONTESSA
 		raise NotImplementedError()
-	def choose_which_card_to_lose(self, move, game_state, history):
+	def choose_which_card_to_lose(self, game_state, history):
 		#options: REVEAL_CARD_1, REVEAL_CARD_2
+		raise NotImplementedError()
+	def choose_which_cards_to_keep(self, cards, number_of_cards, game_state, history):
+		# e.g. if cards = (DUKE, AMBASSADOR, AMBASSADOR, CAPTAIN) and number_of_cards = 2,
+		# could return (DUKE, CAPTAIN)
 		raise NotImplementedError()
 	
 	def show_game_state(self, game_state):
