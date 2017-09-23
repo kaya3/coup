@@ -1,5 +1,6 @@
 from defs import *
 from random import shuffle
+from collections import deque
 
 class Game:
 	def __init__(self, players):
@@ -12,8 +13,7 @@ class Game:
 			p.id: PlayerState(draw_card(), draw_card(), true, true, 2)
 			for p in players
 		}
-		
-		self.player_order = tuple(p.id for p in players)
+		self.player_order = deque( p.id for p in players )
 		
 		self.history = []
 	def shuffle(self):
@@ -31,26 +31,29 @@ class Game:
 		if move is None:
 			raise ValueError()
 		
+		m_t = move.move_type
 		p_id = move.player_id
+		t_id = move.target_player_id
+		
 		if p_id != self.player_order[0]:
 			return False
-		elif self.player_states[p_id].number_of_coins >= 10 and move.move_type != COUP:
+		elif self.get_player_coins(p_id) >= 10 and m_t != COUP:
 			return False
-		elif move.move_type in [INCOME, FOREIGN_AID, TAX, SWAP]:
+		elif m_t in [INCOME, FOREIGN_AID, TAX, SWAP]:
 			return True
-		elif move.target_player_id == p_id or move.target_player_id not in self.players:
+		elif t_id == p_id or t_id not in self.players:
 			return False
-		elif move.move_type == ASSASSINATE:
+		elif m_t == ASSASSINATE:
 			return self.get_player_coins(p_id) >= 3
-		elif move.move_type == COUP:
+		elif m_t == COUP:
 			return self.get_player_coins(p_id) >= 7
-		elif move.move_type == STEAL:
-			c = self.get_player_coins(move.target_player_id)
+		elif m_t == STEAL:
+			c = self.get_player_coins(t_id)
 			return move.number_of_coins >= 1 and move.number_of_coins <= min(c, 2)
 		else:
 			return False
 	
-	def state_visible_to_player(self, game_state, player_id):
+	def state_visible_to_player(self, player_id):
 		return GameState({
 			i: PlayerState(
 				s.card1 if i == player_id or not s.card1alive else HIDDEN,
@@ -59,18 +62,18 @@ class Game:
 				s.card2alive,
 				s.number_of_coins
 			)
-			for i,s in game_state.items()
-		}, game_state.player_order)
+			for i,s in self.player_states.items()
+		}, tuple(self.player_order))
 	
 	def get_opponents(self, player_id):
-		p_o = self.current_state.player_order
+		p_o = self.player_order
 		i = p_o.index(player_id)
 		return p_o[i+1:] + p_o[:i]
 	
 	def take_turn(self):
-		p_id = self.current_state.player_order[0]
+		p_id = self.player_order[0]
 		
-		p_st = self.state_visible_to_player(self.current_state, p_id)
+		p_st = self.state_visible_to_player(p_id)
 		p_move = self.players[p_id].choose_move(p_st, self.history)
 		
 		if not self.move_valid_in_state(p_move, p_st):
@@ -80,19 +83,26 @@ class Game:
 		
 		#TODO: history
 	
-	def get_response(self, o_id, game_state, move, options):
-		r = self.players[o_id].respond_to_move(game_state, move, options, self.history)
+	def get_response(self, o_id, move, options):
+		r = self.players[o_id].respond_to_move(
+			self.state_visible_to_player(o_id),
+			move,
+			options,
+			self.history
+		)
 		if r not in options:
 			raise ValueError()
 		return r
 	
+	def get_response_to_response
+	
 	def everyone_accepts_player_has(self, player_id, card):
-		opponents
+		for o_id in self.get_opponents(player_id):
+			r = 
 	
 	def update_state(self, move):
-		game_state = self.current_state
-		player_states = dict(game_state.player_states)
-		opponents = list(game_state.player_order[1:])
+		player_states = dict(self.player_states)
+		opponents = list(self.player_order[1:])
 		p = self.players[move.player_id]
 		
 		if move.move_type == INCOME:
@@ -107,6 +117,7 @@ class Game:
 				if r != OK:
 					if self.everyone_accepts_player_has(o_id, DUKE):
 						blocked = True
+						break
 						
 					
 				

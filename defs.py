@@ -30,11 +30,8 @@ NO_I_HAVE_DUKE = 33
 NO_I_HAVE_AMBASSADOR = 34
 NO_I_HAVE_CAPTAIN = 35
 NO_I_HAVE_CONTESSA = 36
-REVEAL_AMBASSADOR = 37
-REVEAL_CAPTAIN = 38
-REVEAL_CONTESSA = 39
-REVEAL_DUKE = 40
-REVEAL_ASSASSIN = 41
+REVEAL_CARD_1 = 37
+REVEAL_CARD_2 = 38
 
 class Player:
 	next_id = 1
@@ -43,11 +40,33 @@ class Player:
 		Player.next_id += 1
 	
 	def choose_move(self, game_state, history):
+		#options: INCOME, FOREIGN_AID, TAX, SWAP, STEAL, ASSASSINATE, COUP
 		raise NotImplementedError()
-	def respond_to_move(self, game_state, move, options, history):
+	def respond_to_foreign_aid(self, move, game_state, history):
+		#options: OK, NO_I_HAVE_DUKE
 		raise NotImplementedError()
-	def respond_to_block(self, game_state, move, block, history):
+	def respond_to_tax(self, move, game_state, history):
+		#options: OK, NO_YOU_DONT_HAVE
 		raise NotImplementedError()
+	def respond_to_swap(self, move, game_state, history):
+		#options: OK, NO_YOU_DONT_HAVE
+		raise NotImplementedError()
+	def respond_to_steal_from_me(self, move, game_state, history):
+		#options: OK, NO_YOU_DONT_HAVE, NO_I_HAVE_AMBASSADOR, NO_I_HAVE_CAPTAIN
+		raise NotImplementedError()
+	def respond_to_steal_from_someone_else(self, move, game_state, history):
+		#options: OK, NO_YOU_DONT_HAVE
+		raise NotImplementedError()
+	def respond_to_assassinate_me(self, move, game_state, history):
+		#options: OK, NO_YOU_DONT_HAVE, NO_I_HAVE_CONTESSA
+		raise NotImplementedError()
+	def respond_to_assassinate_someone_else(self, move, game_state, history):
+		#options: REVEAL_CARD_1, REVEAL_CARD_2, NO_YOU_DONT_HAVE
+		raise NotImplementedError()
+	def respond_to_coup_me(self, move, game_state, history):
+		#options: REVEAL_CARD_1, REVEAL_CARD_2
+		raise NotImplementedError()
+	
 	def show_game_state(self, game_state):
 		pass
 	def show_move(self, game_state, move):
