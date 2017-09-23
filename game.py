@@ -78,9 +78,10 @@ class Game:
 		i = p_o.index(player_id)
 		return p_o[i+1:] + p_o[:i]
 	
-	def player_can_reveal_card(self, player_id, card):
+	def player_can_reveal_card(self, player_id, card, h):
 		p_st = self.player_states[player_id]
 		if p_st.card1 == card and p_st.card1alive:
+			h.append(HistoryLogEntry(player_id, REVEALED_CARD, card))
 			self.replace_cards(card)
 			self.player_states[player_id] = PlayerState(
 				card1 = self.draw_card(),
@@ -91,6 +92,7 @@ class Game:
 			)
 			return True
 		elif p_st.card2 == card and p_st.card2alive:
+			h.append(HistoryLogEntry(player_id, REVEALED_CARD, card))
 			self.replace_cards(card)
 			self.player_states[player_id] = PlayerState(
 				card2 = p_st.card1,
@@ -101,10 +103,11 @@ class Game:
 			)
 			return True
 		else:
-			self.player_loses_life(player_id)
+			h.append(HistoryLogEntry(player_id, FAILED_TO_REVEAL_CARD, card))
+			self.player_loses_life(player_id, h)
 			return False
 	
-	def player_successfully_claims_to_have_card(self, player_id, card, opponents=None):
+	def player_successfully_claims_to_have_card(self, player_id, card, h, opponents=None):
 		if opponents is None:
 			opponents = self.get_opponents(player_id)
 		
@@ -116,9 +119,10 @@ class Game:
 				self.history
 			)
 			if r == NO_YOU_DONT_HAVE:
+				h.append(HistoryLogEntry(o_id, NO_YOU_DONT_HAVE, card))
 				p_st = self.player_states[player_id]
-				if self.player_can_reveal_card(player_id, card):
-					self.player_loses_life(o_id)
+				if self.player_can_reveal_card(player_id, card, h):
+					self.player_loses_life(o_id, h)
 					return True
 				else:
 					return False
@@ -126,8 +130,9 @@ class Game:
 				raise ValueError(r)
 		return True
 	
-	def player_loses_life(self, player_id):
+	def player_loses_life(self, player_id, h):
 		p_st = self.player_states[player_id]
+		card_lost = None
 		if p_st.card1alive and p_st.card2alive:
 			r = self.players[player_id].choose_which_card_to_lose(
 				self.state_visible_to_player(player_id),
@@ -135,14 +140,18 @@ class Game:
 			)
 			if r == REVEAL_CARD_1:
 				p_st = PlayerState(p_st.card1, p_st.card2, False, True, p_st.number_of_coins)
+				card_lost = p_st.card1
 			elif r == REVEAL_CARD_2:
 				p_st = PlayerState(p_st.card1, p_st.card2, True, False, p_st.number_of_coins)
+				card_lost = p_st.card2
 			else:
 				raise ValueError(r)
 		else:
+			card_lost = (p_st.card1 if p_st.card1alive else p_st.card2)
 			p_st = PlayerState(p_st.card1, p_st.card2, False, False, p_st.number_of_coins)
 			self.player_order.remove(player_id)
 		self.player_states[player_id] = p_st
+		h.append(HistoryLogEntry(player_id, LOST_CARD, card_lost))
 	
 	def take_turn(self):
 		p_id = self.player_order[0]
@@ -153,36 +162,36 @@ class Game:
 		if not self.move_valid(p_move):
 			raise ValueError(p_move)
 		
-		self.update_state(p_move)
-		
-		#TODO: history
+		h = [p_move]
+		self.history.append(h)
+		self.update_state(p_move, h)
 	
-	def update_state(self, move):
+	def update_state(self, move, h):
 		self.player_order.append(self.player_order.popleft())
 		
 		m_t = move.move_type
 		
 		if m_t == INCOME:
-			self.do_income(move)
+			self.do_income(move, h)
 		elif m_t == FOREIGN_AID:
-			self.do_foreign_aid(move)
+			self.do_foreign_aid(move, h)
 		elif m_t == TAX:
-			self.do_tax(move)
+			self.do_tax(move, h)
 		elif m_t == SWAP:
-			self.do_swap(move)
+			self.do_swap(move, h)
 		elif m_t == STEAL:
-			self.do_steal(move)
+			self.do_steal(move, h)
 		elif m_t == ASSASSINATE:
-			self.do_assassinate(move)
+			self.do_assassinate(move, h)
 		elif m_t == COUP:
-			self.do_coup(move)
+			self.do_coup(move, h)
 		else:
 			raise ValueError(m_t)
 	
-	def do_income(self, move):
+	def do_income(self, move, h):
 		self.adjust_player_coins(move.player_id, 1)
 	
-	def do_foreign_aid(self, move):
+	def do_foreign_aid(self, move, h):
 		player = self.players[move.player_id]
 		blocked = False
 		for o_id in self.get_opponents(player.id):
@@ -191,19 +200,23 @@ class Game:
 				self.state_visible_to_player(o_id),
 				self.history
 			)
-			if r != OK and self.player_successfully_claims_to_have_card(o_id, DUKE):
-				blocked = True
-				break
+			if r == NO_I_HAVE_DUKE:
+				h.append(HistoryLogEntry(o_id, NO_I_HAVE_DUKE, DUKE))
+				if self.player_successfully_claims_to_have_card(o_id, DUKE, h):
+					blocked = True
+					break
+			elif r != OK:
+				raise ValueError(r)
 		if not blocked:
 			self.adjust_player_coins(player.id, 2)
 	
-	def do_tax(self, move):
-		if self.player_successfully_claims_to_have_card(move.player_id, DUKE):
+	def do_tax(self, move, h):
+		if self.player_successfully_claims_to_have_card(move.player_id, DUKE, h):
 			self.adjust_player_coins(move.player_id, 3)
 	
-	def do_swap(self, move):
+	def do_swap(self, move, h):
 		p_id = move.player_id
-		if self.player_successfully_claims_to_have_card(p_id, AMBASSADOR):
+		if self.player_successfully_claims_to_have_card(p_id, AMBASSADOR, h):
 			p_st = self.player_states[p_id]
 			options = [self.draw_card(), self.draw_card()]
 			number_of_cards = 0
@@ -251,7 +264,7 @@ class Game:
 					number_of_coins = p_st.number_of_coins
 				)
 	
-	def do_steal(self, move):
+	def do_steal(self, move, h):
 		p_id = move.player_id
 		blocked = False
 		for o_id in self.get_opponents(p_id):
@@ -262,26 +275,28 @@ class Game:
 					self.history
 				)
 				if r == NO_YOU_DONT_HAVE:
-					if self.player_can_reveal_card(p_id, CAPTAIN):
-						self.player_loses_life(o_id)
+					h.append(HistoryLogEntry(o_id, NO_YOU_DONT_HAVE, CAPTAIN))
+					if self.player_can_reveal_card(p_id, CAPTAIN, h):
+						self.player_loses_life(o_id, h)
 					else:
 						blocked = True
 					break
 				elif r in [NO_I_HAVE_AMBASSADOR, NO_I_HAVE_CAPTAIN]:
 					o_card = (AMBASSADOR if r == NO_I_HAVE_AMBASSADOR else CAPTAIN)
-					if self.player_successfully_claims_to_have_card(o_id, o_card):
+					h.append(HistoryLogEntry(o_id, r, o_card))
+					if self.player_successfully_claims_to_have_card(o_id, o_card, h):
 						blocked = True
 					break
 				elif r != OK:
 					raise ValueError(r)
-			elif not self.player_successfully_claims_to_have_card(p_id, CAPTAIN, [o_id]):
+			elif not self.player_successfully_claims_to_have_card(p_id, CAPTAIN, h, [o_id]):
 				blocked = True
 				break
 		if not blocked:
 			self.adjust_player_coins(p_id, move.number_of_coins)
 			self.adjust_player_coins(move.target_player_id, -move.number_of_coins)
 	
-	def do_assassinate(self, move):
+	def do_assassinate(self, move, h):
 		p_id = move.player_id
 		self.adjust_player_coins(p_id, -3)
 		blocked = False
@@ -293,26 +308,28 @@ class Game:
 					self.history
 				)
 				if r == NO_YOU_DONT_HAVE:
-					if self.player_can_reveal_card(p_id, ASSASSIN):
-						self.player_loses_life(o_id)
+					h.append(HistoryLogEntry(o_id, NO_YOU_DONT_HAVE, ASSASSIN))
+					if self.player_can_reveal_card(p_id, ASSASSIN, h):
+						self.player_loses_life(o_id, h)
 					else:
 						blocked = True
 					break
 				elif r == NO_I_HAVE_CONTESSA:
-					if self.player_successfully_claims_to_have_card(o_id, CONTESSA):
+					h.append(HistoryLogEntry(o_id, NO_I_HAVE_CONTESSA, CONTESSA))
+					if self.player_successfully_claims_to_have_card(o_id, CONTESSA, h):
 						blocked = True
 					break
 				elif r != OK:
 					raise ValueError(r)
-			elif not self.player_successfully_claims_to_have_card(p_id, ASSASSIN, [o_id]):
+			elif not self.player_successfully_claims_to_have_card(p_id, ASSASSIN, h, [o_id]):
 				blocked = True
 				break
 		if not blocked:
-			self.player_loses_life(move.target_player_id)
+			self.player_loses_life(move.target_player_id, h)
 	
-	def do_coup(self, move):
+	def do_coup(self, move, h):
 		self.adjust_player_coins(move.player_id, -7)
-		self.player_loses_life(move.target_player_id)
+		self.player_loses_life(move.target_player_id, h)
 	
 	def is_over(self):
 		return len(self.player_order) <= 1
@@ -320,3 +337,4 @@ class Game:
 	def play(self):
 		while not self.is_over():
 			self.take_turn()
+		print('Player', self.player_order[0], 'won')

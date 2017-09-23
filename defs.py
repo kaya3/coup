@@ -7,6 +7,10 @@ class Move(namedtuple('Move', ['player_id', 'move_type', 'target_player_id', 'nu
     def __new__(cls, player_id, move_type, target_player_id=None, number_of_coins=None):
         return super(Move, cls).__new__(cls, player_id, move_type, target_player_id, number_of_coins)
 
+class HistoryLogEntry(namedtuple('Move', ['player_id', 'action', 'card'])):
+    def __new__(cls, player_id, action, card=None):
+        return super(HistoryLogEntry, cls).__new__(cls, player_id, action, card)
+
 # card types
 AMBASSADOR = 10
 CAPTAIN = 11
@@ -34,6 +38,10 @@ NO_I_HAVE_CONTESSA = 36
 REVEAL_CARD_1 = 37
 REVEAL_CARD_2 = 38
 
+# history log entries
+REVEALED_CARD = 41
+FAILED_TO_REVEAL_CARD = 42
+LOST_CARD = 43
 
 
 def card_to_str(card):
