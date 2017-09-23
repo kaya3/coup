@@ -38,3 +38,12 @@ player1_claims_tax = Move(1, TAX)
 player3_assassinates_player1 = Move(3, ASSASSINATE, 1)
 
 player1_steals_two_coins_from_player3 = Move(1, STEAL, 3, 2)
+
+# or
+
+player3_steals_one_coin_from_player1 = Move(
+	player_id = 3,
+	move_type = STEAL,
+	target_player_id = 1,
+	number_of_coins = 1
+)
