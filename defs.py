@@ -45,20 +45,14 @@ class Player:
 	def respond_to_foreign_aid(self, move, game_state, history):
 		#options: OK, NO_I_HAVE_DUKE
 		raise NotImplementedError()
-	def respond_to_tax(self, move, game_state, history):
-		#options: OK, NO_YOU_DONT_HAVE
-		raise NotImplementedError()
-	def respond_to_swap(self, move, game_state, history):
+	def respond_to_claim_opponent_has_card(self, opponent_id, card, game_state, history):
 		#options: OK, NO_YOU_DONT_HAVE
 		raise NotImplementedError()
 	def respond_to_steal_from_me(self, move, game_state, history):
 		#options: OK, NO_YOU_DONT_HAVE, NO_I_HAVE_AMBASSADOR, NO_I_HAVE_CAPTAIN
 		raise NotImplementedError()
-	def respond_to_steal_from_someone_else(self, move, game_state, history):
-		#options: OK, NO_YOU_DONT_HAVE
-		raise NotImplementedError()
 	def respond_to_assassinate_me(self, move, game_state, history):
-		#options: OK, NO_YOU_DONT_HAVE, NO_I_HAVE_CONTESSA
+		#options: REVEAL_CARD_1, REVEAL_CARD_2, NO_YOU_DONT_HAVE, NO_I_HAVE_CONTESSA
 		raise NotImplementedError()
 	def respond_to_assassinate_someone_else(self, move, game_state, history):
 		#options: REVEAL_CARD_1, REVEAL_CARD_2, NO_YOU_DONT_HAVE
