@@ -122,6 +122,8 @@ class Game:
 					return True
 				else:
 					return False
+			elif r != OK:
+				raise ValueError(r)
 		return True
 	
 	def player_loses_life(self, player_id):
@@ -178,7 +180,7 @@ class Game:
 			raise ValueError(m_t)
 	
 	def do_income(self, move):
-		adjust_player_coins(move.player_id, 1)
+		self.adjust_player_coins(move.player_id, 1)
 	
 	def do_foreign_aid(self, move):
 		player = self.players[move.player_id]

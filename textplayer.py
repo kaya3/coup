@@ -40,7 +40,7 @@ class TextPlayer(Player):
 		elif response_str == 'NO':
 			return NO_YOU_DONT_HAVE
 		else:
-			return None
+			raise ValueError()
 	def respond_to_foreign_aid(self, move, game_state, history):
 		return self.respond_to_move(move, game_state, history)
 	def respond_to_steal_from_me(self, move, game_state, history):

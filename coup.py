@@ -1,9 +1,9 @@
 from game import *
 from textplayer import *
-from aiplayer import AIPlayer
+from randomplayer import RandomAI
 
 if __name__ == '__main__':
 	Game(
 		TextPlayer(),
-       AIPlayer() 
+		RandomAI() 
 	).play()

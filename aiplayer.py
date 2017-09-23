@@ -9,14 +9,12 @@ from defs import *
 from random import choice
 
 class AIPlayer(Player):
-    
-   def choose_move(self, game_state, history):		
-
-       NONTARGETMOVES = [INCOME, FOREIGN_AID, SWAP]
-       TARGETMOVES = [TAX, STEAL, ASSASSINATE, COUP]  
-    #Coup players with a single card
-       if game_state.player_states[self.id].number_of_coins > 6:    
-    
+	def choose_move(self, game_state, history):
+		NONTARGETMOVES = [INCOME, FOREIGN_AID, SWAP]
+		TARGETMOVES = [TAX, STEAL, ASSASSINATE, COUP]  
+		#Coup players with a single card
+		if game_state.player_states[self.id].number_of_coins > 6:    
+		
         player_card_count = {
             p_id: int(player.card1alive)+int(player.card2alive)
             for p_id, player in game_state.player_states.items()
