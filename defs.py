@@ -42,25 +42,19 @@ class Player:
 	def choose_move(self, game_state, history):
 		#options: INCOME, FOREIGN_AID, TAX, SWAP, STEAL, ASSASSINATE, COUP
 		raise NotImplementedError()
-	def respond_to_foreign_aid(self, move, game_state, history):
-		#options: OK, NO_I_HAVE_DUKE
-		raise NotImplementedError()
 	def respond_to_claim_opponent_has_card(self, opponent_id, card, game_state, history):
 		#options: OK, NO_YOU_DONT_HAVE
+		raise NotImplementedError()
+	def respond_to_foreign_aid(self, move, game_state, history):
+		#options: OK, NO_I_HAVE_DUKE
 		raise NotImplementedError()
 	def respond_to_steal_from_me(self, move, game_state, history):
 		#options: OK, NO_YOU_DONT_HAVE, NO_I_HAVE_AMBASSADOR, NO_I_HAVE_CAPTAIN
 		raise NotImplementedError()
 	def respond_to_assassinate_me(self, move, game_state, history):
-		#options: REVEAL_CARD_1, REVEAL_CARD_2, NO_YOU_DONT_HAVE, NO_I_HAVE_CONTESSA
+		#options: OK, NO_YOU_DONT_HAVE, NO_I_HAVE_CONTESSA
 		raise NotImplementedError()
-	def respond_to_assassinate_someone_else(self, move, game_state, history):
-		#options: REVEAL_CARD_1, REVEAL_CARD_2, NO_YOU_DONT_HAVE
-		raise NotImplementedError()
-	def respond_to_coup_me(self, move, game_state, history):
-		#options: REVEAL_CARD_1, REVEAL_CARD_2
-		raise NotImplementedError()
-	def respond_to_failed_challenge(self, game_state, history):
+	def choose_which_card_to_lose(self, move, game_state, history):
 		#options: REVEAL_CARD_1, REVEAL_CARD_2
 		raise NotImplementedError()
 	
