@@ -66,6 +66,9 @@ class Player:
 	def respond_to_coup_me(self, move, game_state, history):
 		#options: REVEAL_CARD_1, REVEAL_CARD_2
 		raise NotImplementedError()
+	def respond_to_failed_challenge(self, game_state, history):
+		#options: REVEAL_CARD_1, REVEAL_CARD_2
+		raise NotImplementedError()
 	
 	def show_game_state(self, game_state):
 		pass
