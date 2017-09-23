@@ -1,7 +1,7 @@
 from collections import namedtuple
 
-GameState = namedtuple('GameState', ['player_states', 'whose_turn'])
-PlayerState = namedtuple('PlayerState', ['card1', 'card2', 'number_of_coins'])
+GameState = namedtuple('GameState', ['player_states', 'player_order'])
+PlayerState = namedtuple('PlayerState', ['card1', 'card2', 'card1alive', 'card2alive', 'number_of_coins'])
 
 class Move(namedtuple('Move', ['player_id', 'move_type', 'target_player_id', 'number_of_coins'])):
     def __new__(cls, player_id, move_type, target_player_id=None, number_of_coins=None):
@@ -45,6 +45,8 @@ class Player:
 	def choose_move(self, game_state, history):
 		raise NotImplementedError()
 	def respond_to_move(self, game_state, move, options, history):
+		raise NotImplementedError()
+	def respond_to_block(self, game_state, move, block, history):
 		raise NotImplementedError()
 	def show_game_state(self, game_state):
 		pass
